@@ -1,0 +1,16 @@
+PODS:
+  - MXSFoundation (0.1.0)
+
+DEPENDENCIES:
+  - MXSFoundation (from `../`)
+
+EXTERNAL SOURCES:
+  MXSFoundation:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  MXSFoundation: a82d256d35e3aa005830520a8efaf65f9cd8083c
+
+PODFILE CHECKSUM: 3970c98c7fe1b7c461074c26c9dbced5ceaa5e6e
+
+COCOAPODS: 1.7.5

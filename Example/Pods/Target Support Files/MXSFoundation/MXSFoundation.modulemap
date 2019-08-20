@@ -1,0 +1,6 @@
+framework module MXSFoundation {
+  umbrella header "MXSFoundation-umbrella.h"
+
+  export *
+  module * { export * }
+}
