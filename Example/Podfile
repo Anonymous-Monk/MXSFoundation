@@ -1,0 +1,13 @@
+use_frameworks!
+
+platform :ios, '8.0'
+
+target 'MXSFoundation_Example' do
+  pod 'MXSFoundation', :path => '../'
+
+  target 'MXSFoundation_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
