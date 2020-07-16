@@ -35,6 +35,39 @@ static char rh_base64EncodingTable[64] = {
     return rh_string;
 }
 
+- (NSString *)decimals:(int)decimals {
+    if (self != nil && !self.isEmpty) {
+        CGFloat number = self.floatValue;
+        NSNumberFormatter *nFormat = [[NSNumberFormatter alloc] init];
+        [nFormat setNumberStyle:NSNumberFormatterDecimalStyle];
+        [nFormat setMaximumFractionDigits:decimals];
+        [nFormat setMinimumFractionDigits:decimals];
+        NSString *string = [nFormat stringFromNumber:@(number)];
+        return string;
+    }
+    return @"0";
+}
+
+
+- (BOOL)isEmpty {
+    if (self != nil && ![@"" equals:self.trim]) {
+        return NO;
+    }
+    return YES;
+}
+
+//对比两个字符串内容是否一致
+- (BOOL)equals:(NSString *)string {
+    return [self isEqualToString:string];
+}
+
+//截取字符串前后空格
+- (NSString *)trim
+{
+    return [self stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+}
+
+
 + (NSString *)rh_getSecrectStringWithPhoneNumber:(NSString *)phoneNumber {
     
     if (![phoneNumber rh_checkPhoneNumber]) {

@@ -21,6 +21,14 @@
 + (NSString *)rh_getNumberWithString:(NSString *)string;
 
 /**
+返回小数点后几位
+
+@param string 字符串
+@return 数字
+*/
+- (NSString *)decimals:(int)decimals;
+
+/**
  隐藏电话号码中间4位数字
  
  @param phoneNumber 手机号
