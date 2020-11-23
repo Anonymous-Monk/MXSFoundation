@@ -23,7 +23,7 @@
 /**
 返回小数点后几位
 
-@param string 字符串
+ @param decimals 字符串
 @return 数字
 */
 - (NSString *)decimals:(int)decimals;
@@ -568,6 +568,16 @@
  @return BOOL
  */
 - (BOOL)rh_checkStrongPassword:(NSInteger)briefest
+                       longest:(NSInteger)longest;
+
+/**
+ 当前字符是否为强密码(必须包含字母（区分大小写），数字和符号的组合，长度在8-10之间)：briefest指的是最短密码长度, longest指的时最长密码长度
+ 
+ @param briefest 密码最短的长度
+ @param longest 密码最长的长度
+ @return BOOL
+ */
+- (BOOL)rh_checkForcePassword:(NSInteger)briefest
                        longest:(NSInteger)longest;
 
 #pragma mark - 日期相关

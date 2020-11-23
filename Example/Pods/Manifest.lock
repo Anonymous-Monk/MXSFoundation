@@ -1,5 +1,5 @@
 PODS:
-  - MXSFoundation (0.1.0)
+  - MXSFoundation (1.0.1)
 
 DEPENDENCIES:
   - MXSFoundation (from `../`)
@@ -9,8 +9,8 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  MXSFoundation: a82d256d35e3aa005830520a8efaf65f9cd8083c
+  MXSFoundation: b1bff1d909a7862694601c9b6b27e965d2a638a5
 
 PODFILE CHECKSUM: 3970c98c7fe1b7c461074c26c9dbced5ceaa5e6e
 
-COCOAPODS: 1.7.5
+COCOAPODS: 1.8.4
