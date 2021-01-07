@@ -570,6 +570,12 @@
 - (BOOL)rh_checkStrongPassword:(NSInteger)briefest
                        longest:(NSInteger)longest;
 
+/** 校验强密码 字母（大小写）、数字 符号 （4选3）
+ *  briefest下限briefest上限
+ */
++ (BOOL)rh_checkStrong4Password:(NSString *)password briefest:(NSInteger)briefest
+                        longest:(NSInteger)longest;
+
 /**
  当前字符是否为强密码(必须包含字母（区分大小写），数字和符号的组合，长度在8-10之间)：briefest指的是最短密码长度, longest指的时最长密码长度
  

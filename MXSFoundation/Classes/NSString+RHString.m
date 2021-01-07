@@ -897,6 +897,37 @@ static char rh_base64EncodingTable[64] = {
     return [self rh_regularWithRule:rules];
 }
 
++ (BOOL)rh_checkStrong4Password:(NSString *)password briefest:(NSInteger)briefest
+                    longest:(NSInteger)longest {
+    if (password.length < briefest || password.length > longest) {
+        return NO;
+    }
+    //大写字母
+    NSString *capitalLetterRegex = @"^(?=.*[A-Z]).*$";
+    NSPredicate * capPred = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", capitalLetterRegex];
+    //匹配小写字母
+    NSString *lowerLetterRegex = @"^(?=.*[a-z]).*$";
+    NSPredicate * lowPred = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", lowerLetterRegex];
+    //匹配数字
+    NSString *numberRegex = @"^(?=.*\\d).*$";
+    NSPredicate * numRred = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", numberRegex];
+    //匹配特殊字符
+    NSString *functuationRegex = @"^(?=.*[`~!@#$%^&*()\\-_=+\\|[{}];:'\",<.>/? ]).*$";
+    NSPredicate * funcPred = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", functuationRegex];
+    
+    int passwordComplex = 0;
+    passwordComplex += [capPred evaluateWithObject:password] ? 1 : 0;
+    passwordComplex += [lowPred evaluateWithObject:password] ? 1 : 0;
+    passwordComplex += [numRred evaluateWithObject:password] ? 1 : 0;
+    passwordComplex += [funcPred evaluateWithObject:password] ? 1 : 0;
+    
+    if (passwordComplex < 3) {
+        return NO;
+    }
+    
+    return YES;
+}
+
 - (BOOL)rh_checkForcePassword:(NSInteger)briefest
                       longest:(NSInteger)longest {
     NSString *rules = [NSString stringWithFormat:@"^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\\W_!@#$%^&*`~()-+=]).{%ld,%ld}$", (long)briefest, (long)longest];
