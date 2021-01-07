@@ -10,6 +10,8 @@
 
 @interface NSDate (RHDate)
 
++ (NSCalendar *)currentCalendar;
+
 #pragma mark - 时间戳处理/计算日期
 /**
  通过时间戳计算出与当前时间差
@@ -54,16 +56,28 @@
  */
 + (NSString *)rh_getDateStringWithDate:(NSDate *)date
                              formatter:(NSString *)formatter;
-
-/**
- 通过传入的NSDate计算出是今天/明天/后天
- 
- @param date NSDate
- @return 今天/明天/后天
+/** 获取指定NSDate的字符串日期
  */
-+ (NSString *)rh_calculateDaysWithDate:(NSDate *)date;
++ (NSString *)rh_getDateStringWithDate:(NSDate *)date
+                            dateFormat:(NSString *)dateFormat
+                              timeZone:(NSTimeZone *)timeZone
+                              language:(NSString *)language;
+
+/** NSString 转 NSDate */
++ (NSDate *)rh_getDateFromString:(NSString *)dateString dateFormat:(NSString *)dateFormat;
+
+/** NSString 转 NSDate */
++ (NSDate *)rh_getDateFromString:(NSString *)dateString
+                      dateFormat:(NSString *)dateFormat
+                        timeZone:(NSTimeZone *)timeZone
+                        language:(NSString *)language;
+
 
 #pragma mark - 日期处理
+
+/** 获取某个月的天数（通过年月求每月天数）*/
++ (NSUInteger)rh_getDaysInYear:(NSInteger)year month:(NSInteger)month;
+
 /**
  获取指定NSDate的纪元
  
@@ -137,6 +151,9 @@
  */
 + (NSInteger)rh_getDateTimeDifferenceWithBeginDate:(NSDate *)beginDate
                                            endDate:(NSDate *)endDate;
+
+//计算时间间隔秒数
++ (NSInteger)rh_calculateSecondsWithStartDate:(NSDate *)startDate endDate:(NSDate *)endDate;
 
 /**
  获取指定NSDate的每月第一天的日期
@@ -236,5 +253,50 @@
  */
 + (NSDateComponents *)rh_getCalendarWithUnitFlags:(NSCalendarUnit)unitFlags
                                              date:(NSDate *)date;
+#pragma mark - 获取工作日
+- (BOOL)isWorkday;
+- (BOOL)isWeekend;
++ (BOOL)isWorkdayOfDate:(NSDate *)date;
++ (BOOL)isWeekendOfDate:(NSDate *)date;
+
+#pragma mark - 获取日期零点和结束
+- (NSDate *)zeroDate;
+- (NSDate *)endDate;
++ (NSDate *)zeroDateOfDate:(NSDate *)date;
++ (NSDate *)endDateOfDate:(NSDate *)date;
+
+#pragma mark - 创建日期
+/** yyyy */
++ (NSDate *)rh_setYear:(NSInteger)year;
+
+/** yyyy-MM */
++ (NSDate *)rh_setYear:(NSInteger)year month:(NSInteger)month;
+
+/** yyyy-MM-dd */
++ (NSDate *)rh_setYear:(NSInteger)year month:(NSInteger)month day:(NSInteger)day;
+
+/** yyyy-MM-dd HH */
++ (NSDate *)rh_setYear:(NSInteger)year month:(NSInteger)month day:(NSInteger)day hour:(NSInteger)hour;
+
+/** yyyy-MM-dd HH:mm */
++ (NSDate *)rh_setYear:(NSInteger)year month:(NSInteger)month day:(NSInteger)day hour:(NSInteger)hour minute:(NSInteger)minute;
+
+/** yyyy-MM-dd HH:mm:ss */
++ (NSDate *)rh_setYear:(NSInteger)year month:(NSInteger)month day:(NSInteger)day hour:(NSInteger)hour minute:(NSInteger)minute second:(NSInteger)second;
+
+/** MM-dd HH:mm */
++ (NSDate *)rh_setMonth:(NSInteger)month day:(NSInteger)day hour:(NSInteger)hour minute:(NSInteger)minute;
+
+/** MM-dd */
++ (NSDate *)rh_setMonth:(NSInteger)month day:(NSInteger)day;
+
+/** HH:mm:ss */
++ (NSDate *)rh_setHour:(NSInteger)hour minute:(NSInteger)minute second:(NSInteger)second;
+
+/** HH:mm */
++ (NSDate *)rh_setHour:(NSInteger)hour minute:(NSInteger)minute;
+
+/** mm:ss */
++ (NSDate *)rh_setMinute:(NSInteger)minute second:(NSInteger)second;
 
 @end

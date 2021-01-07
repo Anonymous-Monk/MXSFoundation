@@ -8,7 +8,38 @@
 
 #import "NSDate+RHDate.h"
 
+static const unsigned componentFlags = (NSCalendarUnitYear| NSCalendarUnitMonth | NSCalendarUnitDay | NSCalendarUnitWeekOfMonth |  NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitSecond | NSCalendarUnitWeekday | NSCalendarUnitWeekdayOrdinal);
+
+
 @implementation NSDate (RHDate)
+
+#pragma mark - 获取日历单例对象
++ (NSCalendar *)currentCalendar {
+    static NSCalendar *sharedCalendar = nil;
+    if (!sharedCalendar)
+        sharedCalendar = [NSCalendar autoupdatingCurrentCalendar];
+    return sharedCalendar;
+}
+
++ (NSCalendar *)calendar {
+    static NSCalendar *sharedCalendar = nil;
+    if (!sharedCalendar) {
+        // 创建日历对象，指定日历的算法（公历）
+        sharedCalendar = [[NSCalendar alloc]initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+    }
+    return sharedCalendar;
+}
+
+#pragma mark - 获取当前时区(不使用夏时制)
++ (NSTimeZone *)currentTimeZone {
+    // 当前时区
+    NSTimeZone *localTimeZone = [NSTimeZone localTimeZone];
+    // 当前时区相对于GMT(零时区)的偏移秒数
+    NSInteger interval = [localTimeZone secondsFromGMTForDate:[NSDate date]];
+    // 当前时区(不使用夏时制)：由偏移量获得对应的NSTimeZone对象
+    // 注意：一些夏令时时间 NSString 转 NSDate 时，默认会导致 NSDateFormatter 格式化失败，返回 null
+    return [NSTimeZone timeZoneForSecondsFromGMT:interval];
+}
 
 #pragma mark - 时间戳处理/计算日期
 + (NSString *)rh_compareCureentTimeWithDate:(NSTimeInterval)timeStamp {
@@ -110,48 +141,94 @@
 
 + (NSString *)rh_getDateStringWithDate:(NSDate *)date
                              formatter:(NSString *)formatter {
-    
-    NSDateFormatter *rh_dateFormatter = [[NSDateFormatter alloc] init];
-    
-    rh_dateFormatter.dateFormat = formatter;
-    
-    return [rh_dateFormatter stringFromDate:date];
+    return [self rh_getDateStringWithDate:date dateFormat:formatter timeZone:nil language:nil];
 }
 
-+ (NSString *)rh_calculateDaysWithDate:(NSDate *)date {
-    
-    NSDate *rh_currentDate = [NSDate date];
-    
-    NSCalendar *rh_calendar = [NSCalendar autoupdatingCurrentCalendar];
-    
-    NSDateComponents *comps_today = [rh_calendar components:(NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay)
-                                                   fromDate:rh_currentDate];
-    NSDateComponents *comps_other = [rh_calendar components:(NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay)
-                                                   fromDate:date];
-    
-    if (comps_today.year == comps_other.year &&
-        comps_today.month == comps_other.month &&
-        comps_today.day == comps_other.day) {
-        
-        return @"今天";
-        
-    } else if (comps_today.year == comps_other.year &&
-               comps_today.month == comps_other.month &&
-               (comps_today.day - comps_other.day) == -1 ) {
-        
-        return @"明天";
-        
-    } else if (comps_today.year == comps_other.year &&
-               comps_today.month == comps_other.month &&
-               (comps_today.day - comps_other.day) == -2) {
-        
-        return @"后天";
+
++ (NSString *)rh_getDateStringWithDate:(NSDate *)date
+                            dateFormat:(NSString *)dateFormat
+                              timeZone:(NSTimeZone *)timeZone
+                              language:(NSString *)language {
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    // 设置日期格式
+    dateFormatter.dateFormat = dateFormat;
+    // 设置时区，不设置默认为系统时区
+    if (timeZone) {
+        dateFormatter.timeZone = timeZone;
     }
+    if (!language) {
+        language = [NSLocale preferredLanguages].firstObject;
+    }
+    dateFormatter.locale = [[NSLocale alloc]initWithLocaleIdentifier:language];
+    NSString *dateString = [dateFormatter stringFromDate:date];
     
-    return @"";
+    return dateString;
+}
+
+/** NSString 转 NSDate */
++ (NSDate *)rh_getDateFromString:(NSString *)dateString dateFormat:(NSString *)dateFormat {
+    return [self rh_getDateFromString:dateString dateFormat:dateFormat timeZone:nil language:nil];
+}
+/** NSString 转 NSDate */
++ (NSDate *)rh_getDateFromString:(NSString *)dateString
+                      dateFormat:(NSString *)dateFormat
+                        timeZone:(NSTimeZone *)timeZone
+                        language:(NSString *)language {
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    // 设置日期格式
+    dateFormatter.dateFormat = dateFormat;
+    // 设置时区
+    if (!timeZone) {
+        timeZone = [self currentTimeZone];
+    }
+    if (!language) {
+        language = [NSLocale preferredLanguages].firstObject;
+    }
+    dateFormatter.timeZone = timeZone;
+    dateFormatter.locale = [[NSLocale alloc]initWithLocaleIdentifier:language];
+    // 如果当前时间不存在，就获取距离最近的整点时间
+    dateFormatter.lenient = YES;
+    
+    return [dateFormatter dateFromString:dateString];
 }
 
 #pragma mark - 获取日期
+
+/** 获取某个月的天数（通过年月求每月天数）*/
++ (NSUInteger)rh_getDaysInYear:(NSInteger)year month:(NSInteger)month {
+    BOOL isLeapYear = year % 4 == 0 ? (year % 100 == 0 ? (year % 400 == 0 ? YES : NO) : YES) : NO;
+    switch (month) {
+        case 1:
+        case 3:
+        case 5:
+        case 7:
+        case 8:
+        case 10:
+        case 12:
+        {
+            return 31;
+        }
+        case 4:
+        case 6:
+        case 9:
+        case 11:
+        {
+            return 30;
+        }
+        case 2:
+        {
+            if (isLeapYear) {
+                return 29;
+            } else {
+                return 28;
+            }
+        }
+        default:
+            break;
+    }
+    return 0;
+}
+
 + (NSUInteger)rh_getEraWithDate:(NSDate *)date {
     
     NSDateComponents *rh_dateComponents = [self rh_getCalendarWithUnitFlags:NSCalendarUnitEra
@@ -227,6 +304,19 @@
                                                           options:0];
     
     return rh_dateComponents.day;
+}
+
+//计算时间间隔秒数
++ (NSInteger)rh_calculateSecondsWithStartDate:(NSDate *)startDate endDate:(NSDate *)endDate {
+    return [endDate compareWithOtherDate:startDate];
+}
+
+//比较2个日期 返回差值秒数
+- (NSTimeInterval)compareWithOtherDate:(NSDate *)date {
+    //利用NSCalendar 会有误差 转成时间戳比较
+    NSTimeInterval time1 = [self timeIntervalSince1970];
+    NSTimeInterval time2 = [date timeIntervalSince1970];
+    return (time1-time2);
 }
 
 + (NSDate *)rh_getMonthFirstDeteWithDate:(NSDate *)date {
@@ -361,6 +451,122 @@
     
     return [rh_calendar components:unitFlags
                           fromDate:date];
+}
+
+#pragma mark - 获取工作日
+
+- (BOOL)isWeekend {
+    return [NSDate isWeekendOfDate:self];
+}
+
+- (BOOL)isWorkday {
+    return ![self isWeekend];
+}
+
++ (BOOL)isWorkdayOfDate:(NSDate *)date {
+    NSDateComponents *components = [[NSDate currentCalendar] components:NSCalendarUnitWeekday fromDate:date];
+    if ((components.weekday == 1) ||
+        (components.weekday == 7))
+        return YES;
+    return NO;
+}
++ (BOOL)isWeekendOfDate:(NSDate *)date {
+    return ![NSDate isWorkdayOfDate:date];
+}
+
+#pragma mark - 获取日期零点和结束
+- (NSDate *)zeroDate {
+    return [NSDate zeroDateOfDate:self];
+}
+- (NSDate *)endDate {
+    return [NSDate endDateOfDate:self];
+}
+
++ (NSDate *)zeroDateOfDate:(NSDate *)date {
+    NSDateComponents *components = [[NSDate currentCalendar] components:componentFlags fromDate:date];
+    components.hour = 0;
+    components.minute = 0;
+    components.second = 0;
+    return [[NSDate currentCalendar] dateFromComponents:components];
+}
++ (NSDate *)endDateOfDate:(NSDate *)date {
+    NSDateComponents *components = [[NSDate currentCalendar] components:componentFlags fromDate:date];
+    components.hour = 23; // Thanks Aleksey Kononov
+    components.minute = 59;
+    components.second = 59;
+    return [[NSDate currentCalendar] dateFromComponents:components];
+}
+
+
+#pragma mark - 创建date（通过 NSCalendar 类来创建日期）
++ (NSDate *)rh_setYear:(NSInteger)year month:(NSInteger)month day:(NSInteger)day hour:(NSInteger)hour minute:(NSInteger)minute second:(NSInteger)second {
+    NSCalendar *calendar = [self calendar];
+    // 获取当前日期组件
+    NSDateComponents *components = [calendar components:componentFlags fromDate:[NSDate date]];
+    if (year > 0) {
+        // 初始化日期组件
+        components = [[NSDateComponents alloc]init];
+        components.year = year;
+    }
+    if (month > 0) {
+        components.month = month;
+    }
+    if (day > 0) {
+        components.day = day;
+    }
+    if (hour >= 0) {
+        components.hour = hour;
+    }
+    if (minute >= 0) {
+        components.minute = minute;
+    }
+    if (second >= 0) {
+        components.second = second;
+    }
+    
+    NSDate *date = [calendar dateFromComponents:components];
+    
+    return date;
+}
+
++ (NSDate *)rh_setYear:(NSInteger)year month:(NSInteger)month day:(NSInteger)day hour:(NSInteger)hour minute:(NSInteger)minute {
+    return [self rh_setYear:year month:month day:day hour:hour minute:minute second:0];
+}
+
++ (NSDate *)rh_setYear:(NSInteger)year month:(NSInteger)month day:(NSInteger)day hour:(NSInteger)hour {
+    return [self rh_setYear:year month:month day:day hour:hour minute:0 second:0];
+}
+
++ (NSDate *)rh_setYear:(NSInteger)year month:(NSInteger)month day:(NSInteger)day {
+    return [self rh_setYear:year month:month day:day hour:0 minute:0 second:0];
+}
+
++ (NSDate *)rh_setYear:(NSInteger)year month:(NSInteger)month {
+    return [self rh_setYear:year month:month day:0 hour:0 minute:0 second:0];
+}
+
++ (NSDate *)rh_setYear:(NSInteger)year {
+    return [self rh_setYear:year month:0 day:0 hour:0 minute:0 second:0];
+}
+
++ (NSDate *)rh_setMonth:(NSInteger)month day:(NSInteger)day hour:(NSInteger)hour minute:(NSInteger)minute {
+    return [self rh_setYear:0 month:month day:day hour:hour minute:minute second:0];
+}
+
++ (NSDate *)rh_setMonth:(NSInteger)month day:(NSInteger)day {
+    return [self rh_setYear:0 month:month day:day hour:0 minute:0 second:0];
+}
+
++ (NSDate *)rh_setHour:(NSInteger)hour minute:(NSInteger)minute second:(NSInteger)second {
+    return [self rh_setYear:0 month:0 day:0 hour:hour minute:minute second:second];
+}
+
++ (NSDate *)rh_setHour:(NSInteger)hour minute:(NSInteger)minute {
+    return [self rh_setYear:0 month:0 day:0 hour:hour minute:minute second:0];
+}
+
++ (NSDate *)rh_setMinute:(NSInteger)minute second:(NSInteger)second {
+    return [self rh_setYear:0 month:0 day:0 hour:0 minute:minute second:second];
 }
 
 @end
