@@ -45,51 +45,28 @@ static const unsigned componentFlags = (NSCalendarUnitYear| NSCalendarUnitMonth 
 + (NSString *)rh_compareCureentTimeWithDate:(NSTimeInterval)timeStamp {
     
     NSDate *rh_timeDate = [NSDate dateWithTimeIntervalSince1970:timeStamp];
-    
     NSTimeInterval rh_timeInterval = [rh_timeDate timeIntervalSinceNow];
-    
     rh_timeInterval = -rh_timeInterval;
-    
     NSInteger temp = 0;
-    
-    NSCalendar *rh_calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
-    
-    NSInteger rh_unitFlags  = NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay | NSCalendarUnitWeekday |
-    NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitSecond;
-    
-    NSDateComponents *rh_dateComponents = [rh_calendar components:rh_unitFlags
+    NSCalendar *rh_calendar = [self calendar];
+    NSDateComponents *rh_dateComponents = [rh_calendar components:componentFlags
                                                          fromDate:rh_timeDate];
     
     if (rh_timeInterval < 60) {
-        
         return [NSString stringWithFormat:@"刚刚"];
-        
     } else if((temp = rh_timeInterval / 60) < 60){
-        
         return [NSString stringWithFormat:@"%ld分钟前", (long)temp];
-        
     } else if((temp = rh_timeInterval / 3600) < 24){
-        
         return [NSString stringWithFormat:@"%ld小时前", (long)temp];
-        
     } else if ((temp = rh_timeInterval / 3600 / 24) == 1) {
-        
         return [NSString stringWithFormat:@"昨天%ld时", (long)rh_dateComponents.hour];
-        
     } else if ((temp = rh_timeInterval / 3600 / 24) == 2) {
-        
         return [NSString stringWithFormat:@"前天%ld时", (long)rh_dateComponents.hour];
-        
     } else if((temp = rh_timeInterval / 3600 / 24) < 31){
-        
         return [NSString stringWithFormat:@"%ld天前", (long)temp];
-        
     } else if((temp = rh_timeInterval / 3600 / 24 / 30) < 12){
-        
         return [NSString stringWithFormat:@"%ld个月前",(long)temp];
-        
     } else {
-        
         return [NSString stringWithFormat:@"%ld年前", (long)temp / 12];
     }
 }
@@ -97,20 +74,14 @@ static const unsigned componentFlags = (NSCalendarUnitYear| NSCalendarUnitMonth 
 + (NSString *)rh_getCurrentTimeStamp {
     
     NSDate *rh_cureentDate = [NSDate date];
-    
     return [NSString stringWithFormat:@"%ld", (long)[rh_cureentDate timeIntervalSince1970]];
 }
 
 + (NSString *)rh_displayTimeWithTimeStamp:(NSTimeInterval)timeStamp {
     
     NSDate *rh_timeDate = [NSDate dateWithTimeIntervalSince1970:timeStamp];
-    
-    NSCalendar *rh_calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
-    
-    NSInteger rh_unitFlags = NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay | NSCalendarUnitWeekday |
-    NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitSecond;
-    
-    NSDateComponents *rh_dateComponents = [rh_calendar components:rh_unitFlags
+    NSCalendar *rh_calendar = [self calendar];
+    NSDateComponents *rh_dateComponents = [rh_calendar components:componentFlags
                                                          fromDate:rh_timeDate];
     
     NSInteger rh_year   = rh_dateComponents.year;
@@ -126,14 +97,12 @@ static const unsigned componentFlags = (NSCalendarUnitYear| NSCalendarUnitMonth 
                                 formatter:(NSString *)formatter {
     
     if ([NSString stringWithFormat:@"%@", @(timeStamp)].length == 13) {
-        
         timeStamp /= 1000.0f;
     }
     
+#pragma mark --TODO 实例化各种formatter
     NSDate *rh_timeDate = [NSDate dateWithTimeIntervalSince1970:timeStamp];
-    
     NSDateFormatter *rh_dateFormatter = [[NSDateFormatter alloc] init];
-    
     rh_dateFormatter.dateFormat = formatter;
     
     return [rh_dateFormatter stringFromDate:rh_timeDate];
@@ -149,10 +118,10 @@ static const unsigned componentFlags = (NSCalendarUnitYear| NSCalendarUnitMonth 
                             dateFormat:(NSString *)dateFormat
                               timeZone:(NSTimeZone *)timeZone
                               language:(NSString *)language {
+    
+#pragma mark --TODO 实例化各种formatter
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-    // 设置日期格式
     dateFormatter.dateFormat = dateFormat;
-    // 设置时区，不设置默认为系统时区
     if (timeZone) {
         dateFormatter.timeZone = timeZone;
     }
@@ -174,10 +143,10 @@ static const unsigned componentFlags = (NSCalendarUnitYear| NSCalendarUnitMonth 
                       dateFormat:(NSString *)dateFormat
                         timeZone:(NSTimeZone *)timeZone
                         language:(NSString *)language {
+    
+#pragma mark --TODO 实例化各种formatter
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-    // 设置日期格式
     dateFormatter.dateFormat = dateFormat;
-    // 设置时区
     if (!timeZone) {
         timeZone = [self currentTimeZone];
     }
@@ -351,9 +320,9 @@ static const unsigned componentFlags = (NSCalendarUnitYear| NSCalendarUnitMonth 
 
 + (NSDate *)rh_getTomorrowDay:(NSDate *)date {
     
-    NSCalendar *rh_calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+    NSCalendar *rh_calendar = [self calendar];
     
-    NSDateComponents *rh_dateComponents = [rh_calendar components:NSCalendarUnitWeekday | NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay
+    NSDateComponents *rh_dateComponents = [rh_calendar components:componentFlags
                                                          fromDate:date];
     
     rh_dateComponents.day = rh_dateComponents.day + 1;
@@ -364,8 +333,8 @@ static const unsigned componentFlags = (NSCalendarUnitYear| NSCalendarUnitMonth 
 + (NSDate *)rh_getYearDateWithDate:(NSDate *)date
                              years:(NSInteger)years {
     
-    NSCalendar *rh_calendar = [NSCalendar autoupdatingCurrentCalendar];
-    
+    NSCalendar *rh_calendar = [self currentCalendar];
+
     NSDateComponents *rh_dateComponents = [[NSDateComponents alloc] init];
     
     rh_dateComponents.year = years;
@@ -412,7 +381,7 @@ static const unsigned componentFlags = (NSCalendarUnitYear| NSCalendarUnitMonth 
 + (NSDate *)rh_getDateWithDateComponents:(NSDateComponents *)dateComponents
                                     date:(NSDate *)date {
     
-    NSCalendar *rh_calendar = [NSCalendar autoupdatingCurrentCalendar];
+    NSCalendar *rh_calendar = [self currentCalendar];
     
     return [rh_calendar dateByAddingComponents:dateComponents
                                         toDate:date
